@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import cvxopt as opt
 import plotly.graph_objects as go
+from numpy import array
 
 app = dash.Dash()
 
@@ -124,7 +125,8 @@ def update_output(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
         'data': [
             go.Pie(
                 labels = ['国内株式','国内債券','国内リート','先進国株式','新興国株式','先進国債券','新興国債券','先進国リート'],
-                values = weight.values,
+                values = weight,
+                # values = [1,2,3,4,5,6,7,8],
                 name='train data'
             )
         ],
@@ -171,7 +173,10 @@ def calc_weight(riskTolerance):
 
     portfolios = opt.solvers.qp(P_m, q_m, G_m, h_m, A_m, b_m)
     weight = portfolios['x']
-    return weight
+    w = array(weight)
+    w = w.flatten()
+    w = w.tolist()
+    return w
 
 def create_pieChart(weight):
     return {
