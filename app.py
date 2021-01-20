@@ -60,7 +60,7 @@ app.layout = html.Div([
         {'label': '仕事１', 'value': '1'},
         {'label': '仕事２', 'value': '2'},
         {'label': '仕事３', 'value': '3'},
-        {'label': '無色', 'value': '4'}
+        {'label': '無職', 'value': '4'}
         ],
         value='1',
         labelStyle={'display': 'inline-block'}
