@@ -131,7 +131,8 @@ def update_output(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
             )
         ],
         'layout':{
-            'title': '提案ポートフォリオ'
+            'title': '提案ポートフォリオ',
+            'width': '500'
         }
     }
     return figure
