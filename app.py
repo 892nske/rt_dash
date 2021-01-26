@@ -5,7 +5,6 @@ from dash.dependencies import Input, Output, State
 from pickle import load
 import numpy as np
 import pandas as pd
-import cvxopt as opt
 import plotly.graph_objects as go
 from numpy import array
 
@@ -152,31 +151,8 @@ def calc_weight(riskTolerance):
     covr = pd.read_csv('covr.csv', index_col=0) * np.sqrt(250)
 
     # 最適ポートフォリオ算出
-    n = len(returns)
-    min_ratio = 0.03
-    max_ratio = 0.5
-    min_r = 0.02
-    mus = 1-riskTolerance
-    P = mus*covr.values
-    P_m = opt.matrix(P)
-    q = np.zeros((n, 1))
-    q_m = opt.matrix(q)
-    G = np.concatenate((-np.identity(n), np.identity(n)), 0)
-    G = np.concatenate((G,-np.transpose(returns.values)),0)
-    G_m = opt.matrix(G)
-    h = np.concatenate((-np.ones((n,1))*min_ratio, np.ones((n,1))*max_ratio), 0)
-    h = np.concatenate((h,-np.ones((1,1))*min_r),0)
-    h_m = opt.matrix(h)
-    A = np.ones((1,n))
-    A_m = opt.matrix(A)
-    b = np.ones((1,1))
-    b_m = opt.matrix(b)
-
-    portfolios = opt.solvers.qp(P_m, q_m, G_m, h_m, A_m, b_m)
-    weight = portfolios['x']
-    w = array(weight)
-    w = w.flatten()
-    w = w.tolist()
+    
+    w = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3]
     return w
 
 def create_pieChart(weight):
