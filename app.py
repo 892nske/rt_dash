@@ -100,7 +100,8 @@ app.layout = html.Div([
         labelStyle={'display': 'inline-block'}
     ),
     html.Button(id="submit-button", children="判定"),
-    dcc.Graph(id="output-state")
+    dcc.Graph(id="output-state"),
+    dcc.Graph(id="epl-graph")
 ])
 
 @app.callback(
@@ -115,10 +116,8 @@ app.layout = html.Div([
      State("input-ntw", "value"),
      State("radio-rsk", "value")]
 )
-
-
 def update_output(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
-    X_input = [[Age,Edu,Married,Kids,Occ,Inccl, Risk,Nwcat]]
+    X_input = [[int(Age),int(Edu),int(Married),int(Kids),int(Occ),int(Inccl), int(Risk),int(Nwcat)]]
     RiskTolerance = predict_riskTolerance(X_input)
     weight = calc_weight(RiskTolerance)
     # return create_pieChart(weight)
@@ -140,22 +139,65 @@ def update_output(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
     return figure
 
 
+@app.callback(
+    Output("epl-graph", "figure"),
+    [Input("submit-button", 'n_clicks')],
+    [State("input-age", "value"),
+     State("radio-edu", "value"),
+     State("radio-mar", "value"),
+     State("input-kid", "value"),
+     State("radio-occ", "value"),
+     State("input-inc", "value"),
+     State("input-ntw", "value"),
+     State("radio-rsk", "value")]
+)
+def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
+    X_input = [[int(Age),int(Edu),int(Married),int(Kids),int(Occ),int(Inccl), int(Risk),int(Nwcat)]]
+    RiskTolerance = predict_riskTolerance(X_input)
+    riskreturns = epl_riskreturn()
+    # グラフの記述
+    figure = {
+        'data': [
+            go.Scatter(
+                x = riskreturns['risks'],
+                y = riskreturns['returns'],
+                name='cos',
+            )
+        ],
+        'layout':{
+            'title': 'リスク・リターン',
+            'width': '800',
+            'xaxis': dict(
+                    title_text="X軸",
+                    range=[0, 0.08],
+            ),
+            'yaxis': dict(
+                title_text="Y軸",
+                range=[0, 0.06]
+            )
+        }
+    }
+    return figure
+    
+def epl_riskreturn():
+    eplcsv = pd.read_csv('epl.csv', index_col=0)
+    return eplcsv
+
+
 def predict_riskTolerance(X_input):
-    filename = 'finalized_model.sav'
+    filename = 'finalized_model_xgbclass.sav'
     loaded_model = load(open(filename, 'rb'))
+    X_input = pd.DataFrame(X_input,columns=['AGE07', 'EDCL07', 'MARRIED07', 'KIDS07', 'OCCAT107', 'INCOME07','RISK07', 'NETWORTH07'])
     predictions = loaded_model.predict(X_input)
     return predictions
 
 
 def calc_weight(riskTolerance):
-    # リスクリターンを読み込み
-    returns = pd.read_csv('returns.csv', index_col=0) 
-    returns = np.power(returns+1,1/3)-1
-    covr = pd.read_csv('covr.csv', index_col=0) * np.sqrt(250)
-
-    # 最適ポートフォリオ算出
-    
-    w = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3]
+    portweightcsv = pd.read_csv('portweight.csv', index_col=0) 
+    w = portweightcsv.iloc[riskTolerance-1]
+    # w = portweightcsv.iloc[0]
+    w = w.values.flatten().tolist()
+    # w = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3]
     return w
 
 def create_pieChart(weight):
