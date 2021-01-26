@@ -156,28 +156,66 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
     RiskTolerance = predict_riskTolerance(X_input)
     riskreturns = epl_riskreturn()
     # グラフの記述
-    figure = {
-        'data': [
-            go.Scatter(
+    trace0 = go.Scatter(
                 x = riskreturns['risks'],
                 y = riskreturns['returns'],
-                name='cos',
+                mode='markers',
+                name='効率的フロンティア',
             )
-        ],
-        'layout':{
-            'title': 'リスク・リターン',
-            'width': '800',
-            'xaxis': dict(
-                    title_text="X軸",
-                    range=[0, 0.08],
-            ),
-            'yaxis': dict(
-                title_text="Y軸",
-                range=[0, 0.06]
+    trace1 = go.Scatter(
+                x = pd.DataFrame([0.02,0.05]),
+                y = pd.DataFrame([0.05,0.06]),
+                mode='markers',
+                name='提案ポートフォリオ',
             )
-        }
-    }
-    return figure
+
+    # figure = {
+    #     'data': [
+    #         trace0,trace1
+    #         # go.Scatter(
+    #         #     x = riskreturns['risks'],
+    #         #     y = riskreturns['returns'],
+    #         #     name='効率的フロンティア',
+    #         # ),
+    #         # go.Scatter(
+    #         #     x = pd.DataFrame([0.5]),
+    #         #     y = pd.DataFrame([0.5]),
+    #         #     name='提案ポートフォリオ',
+    #         # )
+    #     ],
+    #     'layout':{
+    #         'title': 'リスク・リターン',
+    #         'width': '800',
+    #         'xaxis': dict(
+    #                 title="リスク",
+    #                 range=[0, 0.08],
+    #         ),
+    #         'yaxis': dict(
+    #             title="リターン",
+    #             range=[0, 0.06]
+    #         )
+    #     }
+    # }
+    t = np.linspace(0, 10, 100)
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Scatter(
+        x = riskreturns['risks'],
+        y = riskreturns['returns'],
+        mode='lines+markers',
+        name='効率的フロンティア',
+        marker_color='rgba(152, 0, 0, .8)'
+    ))
+
+    fig.add_trace(go.Scatter(
+        x = pd.DataFrame([0.03,0.03]),
+        y = pd.DataFrame([0.03,0.03]),
+        mode='markers',
+        name='提案ポートフォリオ',
+        marker_color='rgba(255, 182, 193, .9)'
+    ))
+    return fig
     
 def epl_riskreturn():
     eplcsv = pd.read_csv('epl.csv', index_col=0)
@@ -212,4 +250,4 @@ def create_pieChart(weight):
     }
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run_server(debug=True)
