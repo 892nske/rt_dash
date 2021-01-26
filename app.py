@@ -7,6 +7,7 @@ import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
 from numpy import array
+import os
 
 app = dash.Dash()
 
@@ -167,4 +168,4 @@ def create_pieChart(weight):
     }
 
 if __name__ == '__main__':
-    app.run_server()
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
