@@ -120,14 +120,12 @@ def update_output(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
     X_input = [[int(Age),int(Edu),int(Married),int(Kids),int(Occ),int(Inccl), int(Risk),int(Nwcat)]]
     RiskTolerance = predict_riskTolerance(X_input)
     weight = calc_weight(RiskTolerance)
-    # return create_pieChart(weight)
     # グラフの記述
     figure = {
         'data': [
             go.Pie(
                 labels = ['国内株式','国内債券','国内リート','先進国株式','新興国株式','先進国債券','新興国債券','先進国リート'],
                 values = weight,
-                # values = [1,2,3,4,5,6,7,8],
                 name='train data'
             )
         ],
@@ -200,13 +198,7 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
 
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x = riskreturns['risks'],
-        y = riskreturns['returns'],
-        mode='lines+markers',
-        name='効率的フロンティア',
-        marker_color='rgba(152, 0, 0, .8)'
-    ))
+    
 
     fig.add_trace(go.Scatter(
         x = pd.DataFrame([0.03,0.03]),
@@ -215,6 +207,15 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
         name='提案ポートフォリオ',
         marker_color='rgba(255, 182, 193, .9)'
     ))
+
+    fig.add_trace(go.Scatter(
+        x = riskreturns['risks'],
+        y = riskreturns['returns'],
+        mode='lines+markers',
+        name='効率的フロンティア',
+        marker_color='rgba(152, 0, 0, .8)'
+    ))
+    
     return fig
     
 def epl_riskreturn():
