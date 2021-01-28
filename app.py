@@ -101,7 +101,8 @@ app.layout = html.Div([
     ),
     html.Button(id="submit-button", children="判定"),
     dcc.Graph(id="output-state"),
-    dcc.Graph(id="epl-graph")
+    dcc.Graph(id="epl-graph"),
+    dcc.Graph(id="pfm-graph")
 ])
 
 @app.callback(
@@ -152,10 +153,10 @@ def update_output(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
 def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
     X_input = [[int(Age),int(Edu),int(Married),int(Kids),int(Occ),int(Inccl), int(Risk),int(Nwcat)]]
     RiskTolerance = predict_riskTolerance(X_input)
-    riskreturns = epl_riskreturn()
+    riskreturns = data_import('epl.csv')
     wi = [0,10,20,30,39]
     port_riskseturns = riskreturns.iloc[wi]
-    asset_riskseturns = asset_riskreturn()
+    asset_riskseturns = data_import('asrkrt.csv')
     
     
     # グラフの記述
@@ -205,15 +206,51 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
 
     
     return fig
+
+
+@app.callback(
+    Output("pfm-graph", "figure"),
+    [Input("submit-button", 'n_clicks')],
+    [State("input-age", "value"),
+     State("radio-edu", "value"),
+     State("radio-mar", "value"),
+     State("input-kid", "value"),
+     State("radio-occ", "value"),
+     State("input-inc", "value"),
+     State("input-ntw", "value"),
+     State("radio-rsk", "value")]
+)
+def pfm_graph(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
+    X_input = [[int(Age),int(Edu),int(Married),int(Kids),int(Occ),int(Inccl), int(Risk),int(Nwcat)]]
+    RiskTolerance = predict_riskTolerance(X_input)
+    portsets = ['defensive','slightly-defensive','middle','slightly-aggressive','aggressive']
+    file = 'portperformance_' + portsets[int(RiskTolerance)-1] + '.csv'
+    pfm_data = data_import(file)
     
-def epl_riskreturn():
-    eplcsv = pd.read_csv('epl.csv', index_col=0)
-    return eplcsv
+    # グラフの記述
+    fig = go.Figure(layout=go.Layout(
+                title = '提案ポートフォリオのパフォーマンス(2018年1月に100万円投資した場合)',
+                height = 400, 
+                width = 800,
+                xaxis = dict(title="年月"),
+                yaxis = dict(title="評価額")
+            )
+        )
+
+    # パフォーマンス
+    fig.add_traces(go.Scatter(
+        x = pfm_data['日付'],
+        y = pfm_data['ポートフォリオ'],
+        mode='lines',
+        # marker_color='rgba(255, 182, 193, .9)'
+    ))
+    
+    return fig
 
 
-def asset_riskreturn():
-    asrkrtcsv = pd.read_csv('asrkrt.csv', index_col=0)
-    return asrkrtcsv
+def data_import(filename):
+    df = pd.read_csv(filename, index_col=0)
+    return df
 
 
 def predict_riskTolerance(X_input):
