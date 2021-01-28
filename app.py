@@ -153,74 +153,65 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
     X_input = [[int(Age),int(Edu),int(Married),int(Kids),int(Occ),int(Inccl), int(Risk),int(Nwcat)]]
     RiskTolerance = predict_riskTolerance(X_input)
     riskreturns = epl_riskreturn()
-    # グラフの記述
-    trace0 = go.Scatter(
-                x = riskreturns['risks'],
-                y = riskreturns['returns'],
-                mode='markers',
-                name='効率的フロンティア',
-            )
-    trace1 = go.Scatter(
-                x = pd.DataFrame([0.02,0.05]),
-                y = pd.DataFrame([0.05,0.06]),
-                mode='markers',
-                name='提案ポートフォリオ',
-            )
-
-    # figure = {
-    #     'data': [
-    #         trace0,trace1
-    #         # go.Scatter(
-    #         #     x = riskreturns['risks'],
-    #         #     y = riskreturns['returns'],
-    #         #     name='効率的フロンティア',
-    #         # ),
-    #         # go.Scatter(
-    #         #     x = pd.DataFrame([0.5]),
-    #         #     y = pd.DataFrame([0.5]),
-    #         #     name='提案ポートフォリオ',
-    #         # )
-    #     ],
-    #     'layout':{
-    #         'title': 'リスク・リターン',
-    #         'width': '800',
-    #         'xaxis': dict(
-    #                 title="リスク",
-    #                 range=[0, 0.08],
-    #         ),
-    #         'yaxis': dict(
-    #             title="リターン",
-    #             range=[0, 0.06]
-    #         )
-    #     }
-    # }
-    t = np.linspace(0, 10, 100)
-
-    fig = go.Figure()
-
+    wi = [0,10,20,30,39]
+    port_riskseturns = riskreturns.iloc[wi]
+    asset_riskseturns = asset_riskreturn()
     
+    
+    # グラフの記述
+    fig = go.Figure(layout=go.Layout(
+                title = 'リスク・リターン',
+                height = 400, 
+                width = 800,
+                xaxis = dict(title="リスク",range=[0, 0.08]),
+                yaxis = dict(title="リターン",range=[-0.02, 0.08])
+            )
+        )
 
-    fig.add_trace(go.Scatter(
-        x = pd.DataFrame([0.03,0.03]),
-        y = pd.DataFrame([0.03,0.03]),
+    # 提案ポートフォリオのリスクリターン
+    fig.add_traces(go.Scatter(
+        x = pd.Series([0.03]),
+        y = pd.Series([0.03]),
         mode='markers',
         name='提案ポートフォリオ',
-        marker_color='rgba(255, 182, 193, .9)'
+        marker = dict(size=15),
+        marker_symbol = 'star',
+        marker_color='rgba(152, 0, 0, .8)'
     ))
 
-    fig.add_trace(go.Scatter(
+    # 効率的フロンティア
+    fig.add_traces(go.Scatter(
         x = riskreturns['risks'],
         y = riskreturns['returns'],
         mode='lines+markers',
         name='効率的フロンティア',
-        marker_color='rgba(152, 0, 0, .8)'
+        marker_color='rgba(255, 182, 193, .9)'
     ))
+
+    # 各資産のリスクリターン
+    fig.add_traces(go.Scatter(
+        x = asset_riskseturns['risks'],
+        y = asset_riskseturns['returns'],
+        text = list(asset_riskseturns.index),
+        textposition='middle right',
+        mode='markers+text',
+        name='構成資産',
+        showlegend=False
+    ))
+
+    
+
     
     return fig
     
 def epl_riskreturn():
     eplcsv = pd.read_csv('epl.csv', index_col=0)
     return eplcsv
+
+
+def asset_riskreturn():
+    asrkrtcsv = pd.read_csv('asrkrt.csv', index_col=0)
+    return asrkrtcsv
 
 
 def predict_riskTolerance(X_input):
@@ -234,9 +225,7 @@ def predict_riskTolerance(X_input):
 def calc_weight(riskTolerance):
     portweightcsv = pd.read_csv('portweight.csv', index_col=0) 
     w = portweightcsv.iloc[riskTolerance-1]
-    # w = portweightcsv.iloc[0]
     w = w.values.flatten().tolist()
-    # w = [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.3]
     return w
 
 def create_pieChart(weight):
