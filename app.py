@@ -168,16 +168,7 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
             )
         )
 
-    # 提案ポートフォリオのリスクリターン
-    fig.add_traces(go.Scatter(
-        x = pd.Series([0.03]),
-        y = pd.Series([0.03]),
-        mode='markers',
-        name='提案ポートフォリオ',
-        marker = dict(size=15),
-        marker_symbol = 'star',
-        marker_color='rgba(152, 0, 0, .8)'
-    ))
+    
 
     # 効率的フロンティア
     fig.add_traces(go.Scatter(
@@ -199,7 +190,18 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
         showlegend=False
     ))
 
-    
+    # 提案ポートフォリオのリスクリターン
+    fig.add_traces(go.Scatter(
+        x = pd.Series(port_riskseturns['risks'].iloc[RiskTolerance]),
+        y = pd.Series(port_riskseturns['returns'].iloc[RiskTolerance]),
+        # x = pd.Series([0.03]),
+        # y = pd.Series([0.03]),
+        mode='markers',
+        name='提案ポートフォリオ',
+        marker = dict(size=15),
+        marker_symbol = 'star',
+        marker_color='rgba(152, 0, 0, .8)'
+    ))
 
     
     return fig
