@@ -195,8 +195,6 @@ def efficient_portfolio(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
     fig.add_traces(go.Scatter(
         x = pd.Series(port_riskseturns['risks'].iloc[RiskTolerance]),
         y = pd.Series(port_riskseturns['returns'].iloc[RiskTolerance]),
-        # x = pd.Series([0.03]),
-        # y = pd.Series([0.03]),
         mode='markers',
         name='提案ポートフォリオ',
         marker = dict(size=15),
