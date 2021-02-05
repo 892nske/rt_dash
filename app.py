@@ -241,7 +241,8 @@ def pfm_graph(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
         x = pfm_data['日付'],
         y = pfm_data['ポートフォリオ'],
         mode='lines',
-        name='提案ポートフォリオ'
+        name='提案ポートフォリオ',
+        showlegend=True
         # marker_color='rgba(255, 182, 193, .9)'
     ))
     
