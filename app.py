@@ -102,7 +102,8 @@ app.layout = html.Div([
     html.Button(id="submit-button", children="判定"),
     dcc.Graph(id="output-state"),
     dcc.Graph(id="epl-graph"),
-    dcc.Graph(id="pfm-graph")
+    dcc.Graph(id="pfm-graph"),
+    dcc.Graph(id="sim-graph")
 ])
 
 @app.callback(
@@ -240,7 +241,92 @@ def pfm_graph(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
         x = pfm_data['日付'],
         y = pfm_data['ポートフォリオ'],
         mode='lines',
+        name='提案ポートフォリオ'
         # marker_color='rgba(255, 182, 193, .9)'
+    ))
+    
+    return fig
+
+
+@app.callback(
+    Output("sim-graph", "figure"),
+    [Input("submit-button", 'n_clicks')],
+    [State("input-age", "value"),
+     State("radio-edu", "value"),
+     State("radio-mar", "value"),
+     State("input-kid", "value"),
+     State("radio-occ", "value"),
+     State("input-inc", "value"),
+     State("input-ntw", "value"),
+     State("radio-rsk", "value")]
+)
+def sim_graph(n_clicks,Age,Edu,Married,Kids,Occ,Inccl,Nwcat,Risk):
+    X_input = [[int(Age),int(Edu),int(Married),int(Kids),int(Occ),int(Inccl), int(Risk),int(Nwcat)]]
+    RiskTolerance = predict_riskTolerance(X_input)
+    riskreturns = data_import('epl.csv')
+    wi = [0,10,20,30,39]
+    port_riskseturns = riskreturns.iloc[wi]
+    mu = port_riskseturns['returns'].iloc[int(RiskTolerance)]
+    sigma = port_riskseturns['risks'].iloc[int(RiskTolerance)]
+    ganpon = 1000000
+    year = 30
+    rappaData = create_rappaData(ganpon,year,mu,sigma)
+    ri = ['m3','m2','m1','c','p1','p2','p3']
+    # rappaData.to_csv('rd.csv')
+    
+    # グラフの記述
+    fig = go.Figure(layout=go.Layout(
+                title = '提案ポートフォリオの将来シミュレーション',
+                height = 400, 
+                width = 800,
+                xaxis = dict(title="年月"),
+                yaxis = dict(title="予想額")
+            )
+        )
+
+    # +2σ
+    fig.add_traces(go.Scatter(
+        x = rappaData['year'],
+        y = rappaData['p2'],
+        mode='lines',
+        name='+2σ',
+        marker_color='rgba(229,153,255, .9)'
+    ))
+    
+    # +1σ
+    fig.add_traces(go.Scatter(
+        x = rappaData['year'],
+        y = rappaData['p1'],
+        mode='lines',
+        name='+1σ',
+        marker_color='rgba(204,50,255, .9)'
+    ))
+
+    # 中央値
+    fig.add_traces(go.Scatter(
+        x = rappaData['year'],
+        y = rappaData['c'],
+        mode='lines',
+        name='中央値',
+        marker_color='rgba(152,0,203, .9)'
+    ))
+
+    # -1σ
+    fig.add_traces(go.Scatter(
+        x = rappaData['year'],
+        y = rappaData['m1'],
+        mode='lines',
+        name='-1σ',
+        marker_color='rgba(204,50,255, .9)'
+    ))
+
+    # -2σ
+    fig.add_traces(go.Scatter(
+        x = rappaData['year'],
+        y = rappaData['m2'],
+        mode='lines',
+        name='-2σ',
+        marker_color='rgba(229,153,255, .9)'
     ))
     
     return fig
@@ -265,6 +351,7 @@ def calc_weight(riskTolerance):
     w = w.values.flatten().tolist()
     return w
 
+
 def create_pieChart(weight):
     return {
         'data':[go.Pie(
@@ -275,6 +362,25 @@ def create_pieChart(weight):
             'title': '提案ポートフォリオ'
         }
     }
+
+
+def create_rappaData(ganpon,year,mu,sigma):
+    # 連続福利収益率の平均標準偏差に変換
+    s = np.sqrt(np.log(1+(sigma/(1+mu))**2))
+    r = np.log(1+mu)-(s**2)/2
+    # ラッパデータ作成
+    rappa = pd.DataFrame(np.arange(year+1),columns=['year'])
+    rappa['mean'] = rappa['year']*r
+    rappa['sd'] = np.sqrt(rappa['year'])*s
+    rappa['m3'] = ganpon*np.exp(rappa['mean']-3*rappa['sd'])
+    rappa['m2'] = ganpon*np.exp(rappa['mean']-2*rappa['sd'])
+    rappa['m1'] = ganpon*np.exp(rappa['mean']-1*rappa['sd'])
+    rappa['c'] = ganpon*np.exp(rappa['mean']-0*rappa['sd'])
+    rappa['p1'] = ganpon*np.exp(rappa['mean']+1*rappa['sd'])
+    rappa['p2'] = ganpon*np.exp(rappa['mean']+2*rappa['sd'])
+    rappa['p3'] = ganpon*np.exp(rappa['mean']+3*rappa['sd'])
+    return rappa
+
 
 if __name__ == '__main__':
     app.run_server(debug=True)
