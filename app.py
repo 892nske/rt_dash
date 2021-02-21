@@ -27,10 +27,10 @@ app.layout = html.Div([
     dcc.RadioItems(
         id="radio-edu",
         options=[
-        {'label': '高卒', 'value': '1'},
-        {'label': '学部卒', 'value': '2'},
-        {'label': '修士卒', 'value': '3'},
-        {'label': '博士卒', 'value': '4'}
+        {'label': '高卒未満', 'value': '1'},
+        {'label': '高卒', 'value': '2'},
+        {'label': '大学中退', 'value': '3'},
+        {'label': '大卒', 'value': '4'}
         ],
         value='1',
         labelStyle={'display': 'inline-block'}
@@ -60,9 +60,9 @@ app.layout = html.Div([
     dcc.RadioItems(
         id="radio-occ",
         options=[
-        {'label': '仕事１', 'value': '1'},
-        {'label': '仕事２', 'value': '2'},
-        {'label': '仕事３', 'value': '3'},
+        {'label': '管理職、専門職', 'value': '1'},
+        {'label': '技術職、営業職、サービス業', 'value': '2'},
+        {'label': 'その他', 'value': '3'},
         {'label': '無職', 'value': '4'}
         ],
         value='1',
@@ -99,6 +99,8 @@ app.layout = html.Div([
         value='1',
         labelStyle={'display': 'inline-block'}
     ),
+    html.Br(),
+    html.Br(),
     html.Button(id="submit-button", children="判定"),
     dcc.Graph(id="output-state"),
     dcc.Graph(id="epl-graph"),
